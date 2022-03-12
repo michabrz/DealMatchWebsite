@@ -13,10 +13,12 @@ st.markdown("""
 st.sidebar.image(
     'https://c.smartrecruiters.com/sr-company-logo-prod-dc5/6168ff832f8fb46fc18533dc/huge?r=s3-eu-central-1&_1634271911128')
 
+
 st.sidebar.markdown("""
                     ***Enter the target information below to generate \
                         recommendations.***
                     """)
+
 deal_id = st.sidebar.text_input('Deal ID')
 deal_name = st.sidebar.text_input('Deal name')
 deal_type_name = st.sidebar.selectbox(
@@ -115,5 +117,3 @@ if display:
         data=csv_to_download,
         file_name='deal_match_results.csv'
     )
-
-# API https://dealmatchrec-1-jlx73eg7oq-ew.a.run.app
