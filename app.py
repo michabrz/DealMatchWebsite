@@ -3,12 +3,32 @@ from shutil import copyfileobj
 import streamlit as st
 import requests
 import pandas as pd
+import numpy as np
 
 st.markdown("""
-         # DealCircle Recommender
-         Welcome to the recommender app. Match investors and companies \
-             for a higher chance of a successful deal.
+         # DealCircle recommender
+         Welcome to the recommender app 👋. \n
+         Let's match investors and target companies for a higher chance of a successful deal!
          """)
+
+with st.expander("Help!"):
+    st.markdown("""
+
+             Just open the sidebar, fill in the target information and click on "Display recommendations".
+             If you get an error, double-check that you filled in the data accurately. The required input types are:\n
+
+             - Deal ID: number
+             - Deal name: words and/or number
+             - Target company ID: number
+             - Target name: words and/or number
+             - Target description: words and/or number
+             - Target revenue: number
+             - Target EBITDA: number
+             - Target EBIT: number
+             - Keywords: words, separated by a comma
+
+             """)
+
 
 st.sidebar.image(
     'https://c.smartrecruiters.com/sr-company-logo-prod-dc5/6168ff832f8fb46fc18533dc/huge?r=s3-eu-central-1&_1634271911128')
@@ -105,6 +125,7 @@ if display:
     unsupervised_api_url = f'https://dealmatchrec-1-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
     response = requests.get(unsupervised_api_url).json()
     response_df = pd.DataFrame(response, index=list(range(0, 10)))
+    response_df.index = np.arange(1, len(response_df)+1)
     st.dataframe(response_df)
 
     def convert_results(df):
