@@ -5,17 +5,24 @@ import requests
 import pandas as pd
 import numpy as np
 
+
+# ---- Welcome text
 st.markdown("""
          # DealCircle recommender
          Welcome to the recommender app 👋. \n
          Let's match investors and target companies for a higher chance of a successful deal!
          """)
 
+
+# ---- Create an expandable "Help" section for instructions
 with st.expander("Help!"):
     st.markdown("""
 
-             Just open the sidebar, fill in the target information and click on "Display recommendations".
-             If you get an error, double-check that you filled in the data accurately. The required input types are:\n
+             To generate a recommendation, open the sidebar, fill in the target information and click on "Display recommendations".
+
+             If you get an error, double-check that you filled in the data accurately.
+
+             The required input data types are:\n
 
              - Deal ID: number
              - Deal name: words and/or number
@@ -30,6 +37,7 @@ with st.expander("Help!"):
              """)
 
 
+# ---- Sidebar with form to get new target information
 st.sidebar.image(
     'https://c.smartrecruiters.com/sr-company-logo-prod-dc5/6168ff832f8fb46fc18533dc/huge?r=s3-eu-central-1&_1634271911128')
 
@@ -117,14 +125,22 @@ strs = st.sidebar.text_input('Keywords')
 display = st.sidebar.button('Display recommendations')
 
 
+# ---- Display recommendations list when clicking on display button
 if display:
     st.markdown("""
             **Your results**
             """)
 
-    unsupervised_api_url = f'https://dealmatchrec-1-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
-    response = requests.get(unsupervised_api_url).json()
-    response_df = pd.DataFrame(response, index=list(range(0, 10)))
+    api_url = f'https://dealmatch-rec3-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
+    response = requests.get(api_url).json()
+    print(response)
+    response_df = pd.DataFrame(
+        {'name': list(response['name'].values()),
+         'match_probability': list(response['match_probability'].values()),
+         'description': list(response['description'].values()),
+         'distance_target<=>investor': list(response['distance_target<=>investor'].values()),
+         'Rationale': list(response['Rationale'].values())})
+    response_df = pd.DataFrame(response_df, index=list(range(0, 10)))
     response_df.index = np.arange(1, len(response_df)+1)
     st.dataframe(response_df)
 
