@@ -131,9 +131,16 @@ if display:
             **Your results**
             """)
 
-    unsupervised_api_url = f'https://dealmatchrec-1-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
-    response = requests.get(unsupervised_api_url).json()
-    response_df = pd.DataFrame(response, index=list(range(0, 10)))
+    api_url = f'https://dealmatch-rec3-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
+    response = requests.get(api_url).json()
+    print(response)
+    response_df = pd.DataFrame(
+        {'name': list(response['name'].values()),
+         'match_probability': list(response['match_probability'].values()),
+         'description': list(response['description'].values()),
+         'distance_target<=>investor': list(response['distance_target<=>investor'].values()),
+         'Rationale': list(response['Rationale'].values())})
+    response_df = pd.DataFrame(response_df, index=list(range(0, 10)))
     response_df.index = np.arange(1, len(response_df)+1)
     st.dataframe(response_df)
 
