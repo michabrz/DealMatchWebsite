@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.graph_objs import *
 
 
 
@@ -176,9 +178,11 @@ if st.sidebar.button('Display recommendations') or st.session_state.load_state:
     )
     
     
-    st.markdown("""
-            **Your results**
-            """)
+    #st.markdown("""
+     #       **Your results**
+      #      """) 
+    st.write('**The result is**', len(response_df), '**investors**')
+    
 
 if response_df is not None:
     
@@ -214,7 +218,8 @@ if response_df is not None:
             'Rationale': [list(response_df['Rationale'])[st.session_state.row]]},index=[int(st.session_state.row)+1])
 
 
-    st.write(row_df)
+    #st.write(row_df)
+    st.table(row_df)
 
 
     def get_visual_data():
@@ -243,30 +248,34 @@ if response_df is not None:
         df = get_visual_data()
 
         df = create_frame(df, investor_name)
+        
+        if not df.empty and not ((df['target_ebitda'].sum() +  df['target_revenue'].sum()) ==0 ):
+        
+    
+        
+            fig = px.scatter(df, x="target_ebitda", y="target_revenue", color="sector_count",
+                     size='sector_count', hover_data=['name_de'],template='gridon',
+                     labels={
+                     "target_revenue": "Median Revenue",
+                     "target_ebitda": "Median Ebitda",
+                 },width=800, height=500)
 
-        sns.set_style('whitegrid')
 
-        g = sns.relplot(x="target_ebitda", y="target_revenue", hue='name_de', size='sector_count',
-                sizes=(10, 4000), alpha=.5, palette="muted",
-                height=10, aspect=1.5, data=df)
+            return st.plotly_chart(fig)
+ 
+        
+        else:
+            
+            return st.markdown("""**NO GRAPH DATA AVAILABLE**""")
 
-        try:
-            g._legend.remove()
-        except:
-            g
-
-        g.set(ylabel='Median Target Revenue', xlabel='Median Target EBITDA')
-        g.set(title=f"{investor_name}")
-
-        def label_point(x, y, val, ax):
-            a = pd.concat({'x': x, 'y': y, 'val': val}, axis=1)
-            for i, point in a.iterrows():
-                ax.text(point['x']+0.05, point['y']-0.2, str(point['val']))
-
-        return label_point(df.target_ebitda, df.target_revenue, df.name_de, plt.gca())
 
     st.set_option('deprecation.showPyplotGlobalUse', False)
-    st.pyplot(visualize(row_df['name'].values[0]))
+    
+    try:
+        st.pyplot(visualize(row_df['name'].values[0]))
+        
+    except:
+        pass
 
 
 
