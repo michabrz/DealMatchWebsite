@@ -55,22 +55,22 @@ st.sidebar.markdown("""
                         recommendations.***
                     """)
 
-deal_id = st.sidebar.text_input('Deal ID')
-deal_name = st.sidebar.text_input('Deal name')
+deal_id = st.sidebar.text_input('Deal ID', "12340")
+deal_name = st.sidebar.text_input('Deal name', "Fresh Air")
 deal_type_name = st.sidebar.selectbox(
-    'Deal type', ('DISTRESSED', 'MAJORITY', 'MINORITY', 'OTHER', 'VC'))
-target_company_id = st.sidebar.text_input('Target company ID')
-target_name = st.sidebar.text_input('Target name')
-target_description = st.sidebar.text_input('Target description')
+    'Deal type', ('MAJORITY', 'DISTRESSED', 'MINORITY', 'OTHER', 'VC'))
+target_company_id = st.sidebar.text_input('Target company ID', "823401")
+target_name = st.sidebar.text_input('Target name', "Filtration Test GmbH")
+target_description = st.sidebar.text_input('Target description', "Filtertechnik ist ein weit gefasster Bereich, in dem die verschiedensten Filtertypen, Lösungen und Techniken zum Einsatz gelangen. Effektive Filtration, Adsorption und Separation sind unverzichtbare Bestandteile zahlreicher reibungsloser Abläufe in Industrie, Gewerbe")
 target_revenue = st.sidebar.text_input('Target revenue')
 target_ebitda = st.sidebar.text_input('Target EBITDA')
 target_ebit = st.sidebar.text_input('Target EBIT')
-country_name = st.sidebar.selectbox('Target country', ('Austria',
+country_name = st.sidebar.selectbox('Target country', ('Germany',
                                                        'Belgium',
                                                        'Bulgaria',
                                                        'Czechia',
                                                        'Egypt',
-                                                       'Germany',
+                                                       'Austria',
                                                        'Italy',
                                                        'Netherlands',
                                                        'Poland',
@@ -80,8 +80,8 @@ country_name = st.sidebar.selectbox('Target country', ('Austria',
                                                        'Spain',
                                                        'Switzerland',
                                                        'United States of America'))
-region_name = st.sidebar.selectbox('Target region', ('Baden-Württemberg',
-                                   'Bavaria',
+region_name = st.sidebar.selectbox('Target region', ('Bavaria',
+                                   'Baden-Württemberg',
                                    'Berlin',
                                    'Brandenburg',
                                    'Bremen',
@@ -134,7 +134,7 @@ strs = st.sidebar.text_input('Keywords')
 # --- Initialising SessionState ---
 if "load_state" not in st.session_state:
      st.session_state.load_state = False
-     
+
 
 #display = st.sidebar.button('Display recommendations')
 
@@ -151,6 +151,7 @@ if st.sidebar.button('Display recommendations') or st.session_state.load_state:
     @st.cache
     def get_response():
         api_url = f'https://dealmatch-rec3-jlx73eg7oq-ew.a.run.app/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
+        #api_url_test = f'https://127.0.0.1:8000/recommend?deal_id={deal_id}&deal_name={deal_name}&deal_type_name={deal_type_name}&target_company_id={target_company_id}&target_name={target_name}&target_description={target_description}&target_revenue={target_revenue}&target_ebitda={target_ebitda}&target_ebit={target_ebit}&country_name={country_name}&region_name={region_name}&sector_name={sector_name}&strs={strs}'
         response = requests.get(api_url).json()
         print(response)
         response_df = pd.DataFrame(
@@ -162,7 +163,7 @@ if st.sidebar.button('Display recommendations') or st.session_state.load_state:
         response_df = pd.DataFrame(response_df, index=list(range(0, 10)))
         response_df.index = np.arange(1, len(response_df)+1)
         return response_df
-    
+
     response_df = get_response()
     #st.dataframe(response_df)
 
@@ -176,16 +177,16 @@ if st.sidebar.button('Display recommendations') or st.session_state.load_state:
         data=csv_to_download,
         file_name='deal_match_results.csv'
     )
-    
-    
+
+
     #st.markdown("""
      #       **Your results**
-      #      """) 
-    st.write('**The result is**', len(response_df), '**investors**')
-    
+      #      """)
+    st.write('**The result:**', len(response_df), '**investors**')
+
 
 if response_df is not None:
-    
+
     if "row" not in st.session_state:
         st.session_state.row = 0
 
@@ -194,21 +195,21 @@ if response_df is not None:
 
     def prev_row():
         st.session_state.row -= 1
-        
-   
+
+
     col1, col2, col3, col4, col5 = st.columns(5)
 
     if st.session_state.row < len(response_df.index)-1:
         col2.button(">", on_click=next_row)
 
     else:
-        col2.write("") 
+        col2.write("")
 
     if st.session_state.row > 0:
         col1.button("<", on_click=prev_row)
 
     else:
-        col1.write("") 
+        col1.write("")
 
     row_df = pd.DataFrame(
         {'name': [list(response_df['name'])[st.session_state.row]],
@@ -219,7 +220,7 @@ if response_df is not None:
 
 
     #st.write(row_df)
-    st.table(row_df)
+    st.dataframe(row_df)
 
 
     def get_visual_data():
@@ -227,8 +228,8 @@ if response_df is not None:
         return df
 
     def create_frame(df, investor_name):
-        #frame_1 = df[df['deal_stage_id']>=4]
-        frame_1 = df
+        frame_1 = df[df['deal_stage_id']>=3]
+        #frame_1 = df
         frame_2 = frame_1[['name', 'sector_id', 'name_de', 'target_revenue', 'target_ebitda', 'target_ebit', 'region']]
         frame_3 = frame_2[frame_2['name'] == investor_name]
         frame_4 = frame_3.groupby([frame_3['name_de']],as_index=False).agg({
@@ -238,8 +239,8 @@ if response_df is not None:
             'median',
             'target_ebitda':
             'median'})
-        frame_4.rename(columns={'sector_id': 'sector_count'}, inplace=True)
-        
+        frame_4.rename(columns={'sector_id': 'match count'}, inplace=True)
+
         return frame_4
 
 
@@ -248,36 +249,32 @@ if response_df is not None:
         df = get_visual_data()
 
         df = create_frame(df, investor_name)
-        
+
         if not df.empty and not ((df['target_ebitda'].sum() +  df['target_revenue'].sum()) ==0 ):
-        
-    
-        
-            fig = px.scatter(df, x="target_ebitda", y="target_revenue", color="sector_count",
-                     size='sector_count', hover_data=['name_de'],template='gridon',
+
+
+
+            fig = px.scatter(df, x="target_ebitda", y="target_revenue", color="match count",
+                     size='match count', hover_data=['name_de'],template='gridon',
                      labels={
                      "target_revenue": "Median Revenue",
                      "target_ebitda": "Median Ebitda",
+                     "name_de": "Sector"
                  },width=800, height=500)
 
 
             return st.plotly_chart(fig)
- 
-        
+
+
         else:
-            
+
             return st.markdown("""**NO GRAPH DATA AVAILABLE**""")
 
 
     st.set_option('deprecation.showPyplotGlobalUse', False)
-    
+
     try:
         st.pyplot(visualize(row_df['name'].values[0]))
-        
+
     except:
         pass
-
-
-
-        
-    
